@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 222 47% 4%;
+  --foreground: 210 40% 98%;
+  --card: 222 47% 6%;
+  --card-foreground: 210 40% 98%;
+  --primary: 221 83% 53%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 217 33% 17%;
+  --secondary-foreground: 210 40% 98%;
+  --muted: 217 33% 15%;
+  --muted-foreground: 215 20% 65%;
+  --accent: 217 33% 17%;
+  --accent-foreground: 210 40% 98%;
+  --border: 217 33% 18%;
+  --input: 217 33% 18%;
+  --ring: 221 83% 53%;
+  --radius: 0.75rem;
+}
+
+html, body { background:#020617; color-scheme: dark; }
+
+* { border-color: hsl(var(--border)); }
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #020617; }
+::-webkit-scrollbar-thumb { background: linear-gradient(180deg,#1e3a8a,#1e293b); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #2563eb; }
+
+/* Utility helpers */
+.glass { background: rgba(15,23,42,0.55); backdrop-filter: blur(14px); border: 1px solid rgba(255,255,255,0.06); }
+.grid-bg {
+  background-image: linear-gradient(rgba(59,130,246,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(59,130,246,0.07) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+.text-gradient { background: linear-gradient(120deg,#93c5fd,#60a5fa 40%,#a5b4fc 70%,#ffffff); -webkit-background-clip:text; background-clip:text; color:transparent; }
+.glow { box-shadow: 0 20px 60px -20px rgba(59,130,246,0.55); }
+
+@keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-14px); } }
+.animate-float { animation: float 6s ease-in-out infinite; }
+
+@keyframes shine { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+.shine {
+  background: linear-gradient(90deg, transparent, rgba(147,197,253,0.5), transparent);
+  background-size: 200% 100%;
+  animation: shine 3s linear infinite;
+}
+
+.mask-fade-b { mask-image: linear-gradient(to bottom, black 70%, transparent 100%); -webkit-mask-image: linear-gradient(to bottom, black 70%, transparent 100%); }
