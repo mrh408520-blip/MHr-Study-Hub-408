@@ -214,12 +214,6 @@ const sampleAdmissions = [
 ];
 
 async function seedDatabase() {
-  if (!uri) {
-    throw new Error(
-      'MONGODB_URI is missing. Add it to your environment variables.'
-    );
-  }
-
   if (!dbName) {
     throw new Error(
       'MONGODB_DB_NAME is missing. Add it to your environment variables.'
@@ -240,8 +234,15 @@ async function seedDatabase() {
     await db.collection(collectionName).deleteMany({});
   }
 
-  const defaultAdminUsername = process.env.ADMIN_USERNAME || 'admin';
-  const defaultAdminPassword = process.env.ADMIN_PASSWORD || 'admin123';
+  const defaultAdminUsername = process.env.ADMIN_USERNAME;
+  const defaultAdminPassword = process.env.ADMIN_PASSWORD;
+  
+  if (!defaultAdminUsername || !defaultAdminPassword) {
+    throw new Error(
+      'ADMIN_USERNAME and ADMIN_PASSWORD environment variables are required.'
+    );
+  }
+  
 
   await db.collection('admins').insertOne({
     username: defaultAdminUsername,
@@ -256,7 +257,7 @@ async function seedDatabase() {
   await db.collection('admissions').insertMany(sampleAdmissions);
 
   console.log(
-    `✅ Seeded database "${dbName}" with ${sampleCourses.length} courses, ${sampleCertificates.length} certificates, ${sampleAdmissions.length} admissions, and a default admin account (${defaultAdminUsername}/${defaultAdminPassword}).`
+    `Seeded database "${dbName}" with ${sampleCourses.length} courses, ${sampleCertificates.length} certificates, and ${sampleAdmissions.length} admissions.`
   );
 
   await client.close();
