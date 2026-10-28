@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Logo from './Logo';
-import { SITE } from '@/lib/coursesData';
+import { SITE } from '@/lib/siteData';
 import { Phone, Mail, MapPin, MessageCircle, Youtube, Instagram, Facebook } from 'lucide-react';
 
 export default function Footer(){
@@ -35,7 +35,6 @@ export default function Footer(){
           <div className="flex gap-3">
             <a href={SITE.social.youtube} className="w-10 h-10 rounded-lg border border-white/10 flex items-center justify-center text-white/70 hover:bg-white/5"><Youtube className="w-4 h-4" /></a>
             <a href={SITE.social.instagram} className="w-10 h-10 rounded-lg border border-white/10 flex items-center justify-center text-white/70 hover:bg-white/5"><Instagram className="w-4 h-4" /></a>
-            <a href={SITE.social.facebook} className="w-10 h-10 rounded-lg border border-white/10 flex items-center justify-center text-white/70 hover:bg-white/5"><Facebook className="w-4 h-4" /></a>
             <a href={SITE.social.whatsapp} className="w-10 h-10 rounded-lg border border-white/10 flex items-center justify-center text-white/70 hover:bg-white/5"><MessageCircle className="w-4 h-4" /></a>
           </div>
         </div>

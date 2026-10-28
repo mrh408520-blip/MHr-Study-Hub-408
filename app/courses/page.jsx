@@ -1,12 +1,21 @@
 'use client';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import Header from '@/components/site/Header';
 import Footer from '@/components/site/Footer';
-import { COURSES } from '@/lib/coursesData';
 import { ArrowRight, GraduationCap, BookOpen, Sparkles } from 'lucide-react';
 
 export default function CoursesPage(){
+  const [courses, setCourses] = useState([]);
+
+  useEffect(() => {
+    fetch('/api/courses')
+      .then((res) => res.ok ? res.json() : [])
+      .then((data) => setCourses(Array.isArray(data) ? data : []))
+      .catch(() => setCourses([]));
+  }, []);
+
   return (
     <main className="min-h-screen">
       <Header />
@@ -22,7 +31,7 @@ export default function CoursesPage(){
 
       <section className="pb-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {COURSES.map((c,idx) => (
+          {courses.map((c,idx) => (
             <motion.div key={c.slug} initial={{opacity:0,y:20}} whileInView={{opacity:1,y:0}} viewport={{once:true}} transition={{delay:idx*0.05}}>
               <Link href={`/courses/${c.slug}`} className="group relative block h-full rounded-2xl border border-white/10 p-7 overflow-hidden bg-gradient-to-b from-white/[0.03] to-transparent hover:from-white/[0.06] transition">
                 <div className={`absolute -top-16 -right-16 w-52 h-52 rounded-full bg-gradient-to-br ${c.color} opacity-20 blur-3xl group-hover:opacity-40 transition`} />

@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import Logo from './Logo';
 import { Phone, MessageCircle, Menu, X } from 'lucide-react';
-import { SITE } from '@/lib/coursesData';
+import { SITE } from '@/lib/siteData';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const LINKS = [

@@ -1,34 +1,35 @@
-import { db } from '@/lib/firebaseAdmin';
+import { getDb } from '@/lib/mongodb';
 
 export async function POST(request) {
   try {
+    const db = await getDb();
     const data = await request.json();
+    const createdAt = new Date();
 
-    // Add a new document to the "admissions" collection
-    const docRef = await db.collection('admissions').add({
+    const result = await db.collection('admissions').insertOne({
       ...data,
-      createdAt: new Date().toISOString(),
+      createdAt,
     });
 
-    // UPDATE THIS RETURN STATEMENT
-    // We send back multiple ID formats and the submitted data 
-    // so the frontend has everything it needs to render the success screen!
+    const id = String(result.insertedId);
+
     return Response.json(
-      { 
-        success: true, 
-        id: docRef.id,
-        _id: docRef.id,
+      {
+        success: true,
+        id,
+        _id: id,
         data: {
-          id: docRef.id,
-          _id: docRef.id,
-          ...data 
+          id,
+          _id: id,
+          ...data,
+          createdAt: createdAt.toISOString(),
         },
-        message: 'Admission created successfully' 
+        message: 'Admission created successfully',
       },
       { status: 201 }
     );
   } catch (error) {
-    console.error('Firebase Error:', error);
+    console.error('MongoDB Error:', error);
     return Response.json(
       { success: false, error: error.message },
       { status: 500 }

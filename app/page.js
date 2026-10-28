@@ -1,14 +1,13 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import { ArrowRight, Award, BookOpen, CheckCircle2, GraduationCap, MessageCircle, Phone, Mail, Sparkles, ShieldCheck, Zap, Star, Trophy, Play } from 'lucide-react';
 import Header from '@/components/site/Header';
 import Footer from '@/components/site/Footer';
 import Preloader from '@/components/site/Preloader';
 import Logo from '@/components/site/Logo';
-import { COURSES, SITE } from '@/lib/coursesData';
+import { SITE } from '@/lib/siteData';
 
 const SLIDES = [
   { img: 'https://images.pexels.com/photos/5530484/pexels-photo-5530484.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940', kicker: 'Roorkee • Est. Premium Studio', title: 'Learn. Build. Get Certified.', sub: 'Career-focused computer & coding coaching for the next generation of learners.' },
@@ -74,7 +73,7 @@ function HeroSlider(){
               className="absolute inset-0"
             >
               <div className="absolute inset-6 rounded-3xl overflow-hidden glow border border-white/10">
-                <Image src={s.img} alt="" fill sizes="(max-width:1024px) 100vw, 50vw" className="object-cover" priority />
+                <img src={s.img} alt="" className="h-full w-full object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#020617] via-[#020617]/30 to-transparent" />
               </div>
               <motion.div initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }} className="absolute -left-4 bottom-16 glass rounded-2xl p-4 w-64">
@@ -134,6 +133,15 @@ function CourseCard({ c, idx }){
 }
 
 export default function Page(){
+  const [courses, setCourses] = useState([]);
+
+  useEffect(() => {
+    fetch('/api/courses')
+      .then((res) => res.ok ? res.json() : [])
+      .then((data) => setCourses(Array.isArray(data) ? data : []))
+      .catch(() => setCourses([]));
+  }, []);
+
   return (
     <main className="relative">
       <Preloader />
@@ -159,7 +167,7 @@ export default function Page(){
 
       <Section id="courses" kicker="Our Programs" title="8 foundational courses. One clear path." subtitle="From your first Windows click to publishing a Power BI dashboard — pick a course and start today.">
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {COURSES.map((c,idx) => <CourseCard key={c.slug} c={c} idx={idx} />)}
+          {courses.map((c,idx) => <CourseCard key={c.slug} c={c} idx={idx} />)}
         </div>
         <div className="mt-10 text-center">
           <Link href="/courses" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-medium text-white glass hover:bg-white/10">See all courses <ArrowRight className="w-4 h-4" /></Link>

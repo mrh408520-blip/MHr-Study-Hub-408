@@ -35,7 +35,7 @@ export default function VerifyPage(){
           <p className="mt-4 text-white/60">Enter the unique Certificate ID printed on your MR.H Studio certificate to instantly verify its status.</p>
           <form onSubmit={search} className="mt-8 glass rounded-2xl p-2 flex items-center gap-2">
             <Search className="w-5 h-5 text-white/40 ml-3" />
-            <input value={cid} onChange={e => setCid(e.target.value)} placeholder="e.g. MRH-PY-2025-0001" className="flex-1 bg-transparent p-3 text-white outline-none tracking-wider font-mono" />
+            <input value={cid} onChange={e => setCid(e.target.value)} placeholder="e.g. MRH-1001" className="flex-1 bg-transparent p-3 text-white outline-none tracking-wider font-mono" />
             <button disabled={loading} className="px-5 py-3 rounded-xl font-semibold text-white bg-gradient-to-br from-blue-500 to-indigo-700 disabled:opacity-60">{loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Verify'}</button>
           </form>
           {error && <div className="mt-3 text-sm text-red-400">{error}</div>}

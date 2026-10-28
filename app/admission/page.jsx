@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import Header from '@/components/site/Header';
 import Footer from '@/components/site/Footer';
-import { COURSES, SITE } from '@/lib/coursesData';
+import { SITE } from '@/lib/siteData';
 import { ArrowRight, CheckCircle2, Copy, ShieldCheck, Sparkles, Loader2 } from 'lucide-react';
 
 function AdmissionInner(){
@@ -19,8 +19,17 @@ function AdmissionInner(){
   const [admission, setAdmission] = useState(null);
   const [txnId, setTxnId] = useState('');
   const [paymentNote, setPaymentNote] = useState('');
+  const [paymentProofImage, setPaymentProofImage] = useState('');
   const [confirmed, setConfirmed] = useState(null);
   const [error, setError] = useState('');
+  const [courses, setCourses] = useState([]);
+
+  useEffect(() => {
+    fetch('/api/courses')
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data) => setCourses(Array.isArray(data) ? data : []))
+      .catch(() => setCourses([]));
+  }, []);
 
   useEffect(() => { if (preselected) setForm(f => ({...f, course: preselected})); }, [preselected]);
 
@@ -47,7 +56,16 @@ function AdmissionInner(){
     if (!txnId) { setError('Enter your UPI transaction/reference ID.'); return; }
     setSubmitting(true);
     try {
-      const res = await fetch(`/api/admissions/${admission.id}/payment`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ transactionId: txnId, paymentNote }) });
+      const res = await fetch(`/api/admissions/${admission.id}/payment`, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+          transactionId: txnId,
+          paymentNote,
+          paymentProofImage,
+          imageName: paymentProofImage,
+        })
+      });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || 'Failed');
       setConfirmed(data);
@@ -92,7 +110,7 @@ function AdmissionInner(){
                   <Field label="Age" value={form.age} onChange={v => setForm({...form, age:v})} />
                   <SelectField label="Gender" value={form.gender} onChange={v => setForm({...form, gender:v})} options={['','Male','Female','Other']} />
                   <Field label="Education" value={form.education} onChange={v => setForm({...form, education:v})} />
-                  <SelectField label="Choose Course*" value={form.course} onChange={v => setForm({...form, course:v})} options={['', ...COURSES.map(c=>c.slug)]} render={(v)=> v ? (COURSES.find(c=>c.slug===v)?.title || v) : 'Select a course'} />
+                  <SelectField label="Choose Course*" value={form.course} onChange={v => setForm({...form, course:v})} options={['', ...courses.map(c=>c.slug)]} render={(v)=> v ? (courses.find(c=>c.slug===v)?.title || v) : 'Select a course'} />
                   <div className="sm:col-span-2"><Field label="Address" value={form.address} onChange={v => setForm({...form, address:v})} /></div>
                   <div className="sm:col-span-2">
                     <label className="text-xs uppercase tracking-widest text-white/50">Message (optional)</label>
@@ -132,6 +150,21 @@ function AdmissionInner(){
                   <div className="mt-6">
                     <label className="text-xs uppercase tracking-widest text-white/50">UPI Transaction / Reference ID*</label>
                     <input value={txnId} onChange={e => setTxnId(e.target.value)} className="mt-1 w-full rounded-xl bg-white/[0.04] border border-white/10 p-3 text-white outline-none focus:border-blue-500/50" placeholder="e.g. 4XXXXXXXXX" />
+                  </div>
+                  <div className="mt-4">
+                    <label className="text-xs uppercase tracking-widest text-white/50">Payment proof image</label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        setPaymentProofImage(file ? file.name : '');
+                      }}
+                      className="mt-1 block w-full rounded-xl bg-white/[0.04] border border-white/10 p-3 text-white file:mr-3 file:rounded-lg file:border-0 file:bg-blue-600 file:px-3 file:py-2 file:text-white file:font-medium"
+                    />
+                    {paymentProofImage && (
+                      <div className="mt-2 text-xs text-blue-200">Selected file: {paymentProofImage}</div>
+                    )}
                   </div>
                   <div className="mt-4">
                     <label className="text-xs uppercase tracking-widest text-white/50">Note (optional)</label>
