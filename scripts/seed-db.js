@@ -24,7 +24,7 @@ function loadEnvFile(filePath) {
 loadEnvFile(path.resolve(__dirname, '../.env'));
 
 const uri = process.env.MONGODB_URI;
-const dbName = process.env.MONGODB_DB_NAME || 'mh-study-hub';
+const dbName = process.env.MONGODB_DB_NAME;
 
 const sampleCourses = [
   {
@@ -214,6 +214,17 @@ const sampleAdmissions = [
 ];
 
 async function seedDatabase() {
+  if (!uri) {
+    throw new Error(
+      'MONGODB_URI is missing. Add it to your environment variables.'
+    );
+  }
+
+  if (!dbName) {
+    throw new Error(
+      'MONGODB_DB_NAME is missing. Add it to your environment variables.'
+    );
+  }
   if (!uri) {
     throw new Error(
       'MONGODB_URI is missing. Add your MongoDB Atlas connection string to the .env file before running this script.'
