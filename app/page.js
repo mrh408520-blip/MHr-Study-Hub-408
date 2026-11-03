@@ -9,17 +9,23 @@ import Preloader from '@/components/site/Preloader';
 import Logo from '@/components/site/Logo';
 import { SITE } from '@/lib/siteData';
 
-const SLIDES = [
-  { img: 'https://images.pexels.com/photos/5530484/pexels-photo-5530484.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940', kicker: 'Roorkee • Est. Premium Studio', title: 'Learn. Build. Get Certified.', sub: 'Career-focused computer & coding coaching for the next generation of learners.' },
-  { img: 'https://images.unsplash.com/photo-1607799279861-4dd421887fb3?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzZ8MHwxfHNlYXJjaHwxfHxwcm9ncmFtbWluZyUyMGNsYXNzfGVufDB8fHxibHVlfDE3ODU1OTE4NjB8MA&ixlib=rb-4.1.0&q=85', kicker: '8 Foundational Courses', title: 'From Computer Basics to Python & Power BI', sub: 'A structured path from your first click to your first dashboard.' },
-  { img: 'https://images.pexels.com/photos/577210/pexels-photo-577210.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940', kicker: 'Just ₹20 to Lock Your Seat', title: 'Quick, transparent admissions.', sub: 'Pay a small refundable seat-lock fee via UPI and secure your batch instantly.' },
-  { img: 'https://images.unsplash.com/photo-1541178735493-479c1a27ed24?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxOTJ8MHwxfHNlYXJjaHwxfHxjb21wdXRlciUyMHRyYWluaW5nfGVufDB8fHxibHVlfDE3ODU1OTE4NjV8MA&ixlib=rb-4.1.0&q=85', kicker: 'Verified Certificates', title: 'Prove what you’ve learned.', sub: 'Every certificate we issue is verifiable online with a unique ID.' },
-];
+function getSlides(seatLockFee) {
+  const displayFee = seatLockFee === null ? '—' : `₹${seatLockFee}`;
 
-function HeroSlider(){
+  return [
+    { img: 'https://images.pexels.com/photos/5530484/pexels-photo-5530484.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940', kicker: 'Roorkee • Est. Premium Studio', title: 'Learn. Build. Get Certified.', sub: 'Career-focused computer & coding coaching for the next generation of learners.' },
+    { img: 'https://images.unsplash.com/photo-1607799279861-4dd421887fb3?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzZ8MHwxfHNlYXJjaHwxfHxwcm9ncmFtbWluZyUyMGNsYXNzfGVufDB8fHxibHVlfDE3ODU1OTE4NjB8MA&ixlib=rb-4.1.0&q=85', kicker: '8 Foundational Courses', title: 'From Computer Basics to Python & Power BI', sub: 'A structured path from your first click to your first dashboard.' },
+    { img: 'https://images.pexels.com/photos/577210/pexels-photo-577210.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940', kicker: `Just ${displayFee} to Lock Your Seat`, title: 'Quick, transparent admissions.', sub: 'Pay a small refundable seat-lock fee via UPI and secure your batch instantly.' },
+    { img: 'https://images.unsplash.com/photo-1541178735493-479c1a27ed24?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxOTJ8MHwxfHNlYXJjaHwxfHxjb21wdXRlciUyMHRyYWluaW5nfGVufDB8fHxibHVlfDE3ODU1OTE4NjV8MA&ixlib=rb-4.1.0&q=85', kicker: 'Verified Certificates', title: 'Prove what you’ve learned.', sub: 'Every certificate we issue is verifiable online with a unique ID.' },
+  ];
+}
+
+function HeroSlider({ seatLockFee }){
+  const slides = getSlides(seatLockFee);
+  const seatLockLabel = seatLockFee === null ? '—' : `₹${seatLockFee}`;
   const [i, setI] = useState(0);
-  useEffect(() => { const t = setInterval(() => setI(v => (v+1)%SLIDES.length), 5500); return () => clearInterval(t); }, []);
-  const s = SLIDES[i];
+  useEffect(() => { const t = setInterval(() => setI(v => (v+1)%slides.length), 5500); return () => clearInterval(t); }, [slides.length]);
+  const s = slides[i];
   return (
     <section className="relative min-h-[100svh] w-full overflow-hidden pt-24 sm:pt-28">
       <div className="absolute inset-0 grid-bg opacity-40" />
@@ -47,13 +53,13 @@ function HeroSlider(){
           </div>
 
           <div className="mt-10 flex items-center gap-6">
-            {SLIDES.map((_,idx) => (
+            {slides.map((_,idx) => (
               <button key={idx} onClick={() => setI(idx)} className={`h-1.5 rounded-full transition-all ${idx===i ? 'w-10 bg-blue-400' : 'w-4 bg-white/20 hover:bg-white/40'}`} />
             ))}
           </div>
 
           <div className="mt-8 grid grid-cols-3 gap-4 max-w-md">
-            {[{n:'8',l:'Courses'},{n:'₹20',l:'Seat Lock'},{n:'100%',l:'Certified'}].map((k,idx)=>(
+            {[{n:'8',l:'Courses'},{n: seatLockLabel, l:'Seat Lock'},{n:'100%',l:'Certified'}].map((k,idx)=>(
               <div key={idx} className="glass rounded-xl p-4">
                 <div className="text-2xl font-black text-white">{k.n}</div>
                 <div className="text-[11px] uppercase tracking-widest text-white/50 mt-1">{k.l}</div>
@@ -134,6 +140,7 @@ function CourseCard({ c, idx }){
 
 export default function Page(){
   const [courses, setCourses] = useState([]);
+  const [seatLockFee, setSeatLockFee] = useState(null);
 
   useEffect(() => {
     fetch('/api/courses')
@@ -142,18 +149,33 @@ export default function Page(){
       .catch(() => setCourses([]));
   }, []);
 
+  useEffect(() => {
+    fetch('/api/settings', { cache: 'no-store', headers: { 'Cache-Control': 'no-cache' } })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!data || !Number.isFinite(Number(data.registrationPrice))) {
+          setSeatLockFee(null);
+          return;
+        }
+        setSeatLockFee(Number(data.registrationPrice));
+      })
+      .catch(() => setSeatLockFee(null));
+  }, []);
+
+  const seatLockLabel = seatLockFee === null ? '—' : `₹${seatLockFee}`;
+
   return (
     <main className="relative">
       <Preloader />
       <Header />
-      <HeroSlider />
+      <HeroSlider seatLockFee={seatLockFee} />
 
       <Section id="why" kicker="Why MR.H Studio" title="A different kind of coaching studio." subtitle="We combine premium mentorship, structured curriculum and modern tools — built for real career outcomes, not just attendance.">
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {[
             {i:GraduationCap,t:'Structured curriculum',d:'Carefully designed syllabus for beginners with real-world projects.'},
             {i:Award,t:'Verified certificates',d:'Every certificate has a unique ID that can be verified online.'},
-            {i:ShieldCheck,t:'Transparent fees',d:'Just ₹20 to lock your seat via UPI. No hidden charges.'},
+            {i:ShieldCheck,t:'Transparent fees',d:`Just ${seatLockLabel} to lock your seat via UPI. No hidden charges.`},
             {i:Trophy,t:'Career focused',d:'From Excel to Power BI to Python — skills that get you hired.'},
           ].map((f,idx)=>(
             <motion.div key={idx} initial={{opacity:0,y:20}} whileInView={{opacity:1,y:0}} viewport={{once:true}} transition={{delay:idx*0.08}} className="relative rounded-2xl p-6 glass hover:border-blue-500/30 transition">
@@ -178,7 +200,7 @@ export default function Page(){
         <div className="grid md:grid-cols-3 gap-5">
           {[
             {n:'01',t:'Fill the admission form',d:'Share your details and pick a course.'},
-            {n:'02',t:'Pay ₹20 via UPI QR',d:'Small refundable fee to confirm your seat.'},
+            {n:'02',t:`Pay ${seatLockLabel} via UPI QR`,d:'Small refundable fee to confirm your seat.'},
             {n:'03',t:'Admin verifies & confirms',d:'You get a confirmation and your batch start date.'},
           ].map((step,idx)=>(
             <motion.div key={idx} initial={{opacity:0,y:20}} whileInView={{opacity:1,y:0}} viewport={{once:true}} transition={{delay:idx*0.1}} className="relative rounded-2xl p-8 glass overflow-hidden">

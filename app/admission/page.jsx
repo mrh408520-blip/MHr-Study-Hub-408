@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Header from '@/components/site/Header';
 import Footer from '@/components/site/Footer';
 import { SITE } from '@/lib/siteData';
+import { buildUpiPaymentUrl } from '@/lib/payment';
 import { ArrowRight, CheckCircle2, Copy, ShieldCheck, Sparkles, Loader2 } from 'lucide-react';
 
 function AdmissionInner(){
@@ -23,6 +24,10 @@ function AdmissionInner(){
   const [confirmed, setConfirmed] = useState(null);
   const [error, setError] = useState('');
   const [courses, setCourses] = useState([]);
+  const [siteSettings, setSiteSettings] = useState({
+    registrationPrice: null,
+    paymentQrUrl: '',
+  });
 
   useEffect(() => {
     fetch('/api/courses')
@@ -31,10 +36,28 @@ function AdmissionInner(){
       .catch(() => setCourses([]));
   }, []);
 
+  useEffect(() => {
+    fetch('/api/settings', { cache: 'no-store', headers: { 'Cache-Control': 'no-cache' } })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!data || !Number.isFinite(Number(data.registrationPrice))) {
+          setSiteSettings({ registrationPrice: null, paymentQrUrl: '' });
+          return;
+        }
+        setSiteSettings({
+          registrationPrice: Number(data.registrationPrice),
+          paymentQrUrl: data.paymentQrUrl || '',
+        });
+      })
+      .catch(() => setSiteSettings({ registrationPrice: null, paymentQrUrl: '' }));
+  }, []);
+
   useEffect(() => { if (preselected) setForm(f => ({...f, course: preselected})); }, [preselected]);
 
-  const upiUrl = `upi://pay?pa=${encodeURIComponent(SITE.upiId)}&pn=${encodeURIComponent(SITE.upiName)}&am=${SITE.seatLockFee}&cu=INR&tn=${encodeURIComponent('MRH Seat Lock')}`;
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=320x320&margin=6&data=${encodeURIComponent(upiUrl)}`;
+  const seatLockFee = siteSettings.registrationPrice === null ? null : Number(siteSettings.registrationPrice ?? SITE.seatLockFee ?? 20);
+  const displayFee = seatLockFee === null ? '—' : `₹${seatLockFee}`;
+  const upiUrl = buildUpiPaymentUrl({ amount: seatLockFee ?? 0, upiId: SITE.upiId, upiName: SITE.upiName });
+  const qrUrl = siteSettings.paymentQrUrl ? `${siteSettings.paymentQrUrl}${siteSettings.paymentQrUrl.includes('?') ? '&' : '?'}ts=${Date.now()}` : '';
 
   const submitForm = async (e) => {
     e.preventDefault();
@@ -83,7 +106,7 @@ function AdmissionInner(){
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(37,99,235,0.25),transparent_60%)]" />
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full glass text-xs text-blue-200"><Sparkles className="w-3 h-3" /> Admission Form</div>
-          <h1 className="mt-4 text-4xl sm:text-5xl font-black tracking-tight text-gradient">Lock your seat for just ₹20</h1>
+          <h1 className="mt-4 text-4xl sm:text-5xl font-black tracking-tight text-gradient">Lock your seat for just {displayFee}</h1>
           <p className="mt-3 text-white/60">A small refundable seat-lock fee helps us confirm your batch. Fill the form, pay via UPI QR, and our team will verify within a few hours.</p>
 
           <div className="mt-8 flex items-center gap-2">
@@ -129,7 +152,7 @@ function AdmissionInner(){
               <motion.div key="f2" initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-10}} className="grid md:grid-cols-2 gap-6">
                 <div className="rounded-3xl p-6 sm:p-8 glass">
                   <div className="text-xs uppercase tracking-widest text-blue-300">Seat Lock Payment</div>
-                  <div className="mt-1 text-2xl font-black">Pay ₹{SITE.seatLockFee} via UPI</div>
+                  <div className="mt-1 text-2xl font-black">Pay {displayFee} via UPI</div>
                   <div className="mt-4 rounded-2xl bg-white p-4 flex items-center justify-center">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={qrUrl} alt="UPI QR" className="w-72 h-72" />
@@ -142,7 +165,7 @@ function AdmissionInner(){
                     <div><div className="text-white/50 text-xs">Payee</div><div>{SITE.upiName}</div></div>
                     <a href={upiUrl} className="px-3 py-2 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-200 text-xs">Open UPI App</a>
                   </div>
-                  <div className="mt-4 rounded-xl p-3 bg-blue-500/10 border border-blue-500/20 text-xs text-blue-100">₹20 is a small seat-lock/registration fee. Once your batch is confirmed, this can be adjusted against your course fee — per admin’s policy.</div>
+                  <div className="mt-4 rounded-xl p-3 bg-blue-500/10 border border-blue-500/20 text-xs text-blue-100">{displayFee === '—' ? '—' : `${displayFee} is a small seat-lock/registration fee.`} Once your batch is confirmed, this can be adjusted against your course fee — per admin’s policy.</div>
                 </div>
                 <form onSubmit={submitPayment} className="rounded-3xl p-6 sm:p-8 glass">
                   <div className="text-xs uppercase tracking-widest text-blue-300">Confirm Payment</div>

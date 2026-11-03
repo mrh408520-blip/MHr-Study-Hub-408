@@ -1,136 +1,128 @@
 "use client";
-import { useState } from "react";
 
-export default function AdminDashboard() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [error, setError] = useState("");
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Eye, EyeOff, Lock, User } from 'lucide-react';
+
+export default function AdminLoginPage() {
+  const router = useRouter();
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
     setLoading(true);
-    setError("");
+    setError('');
 
     try {
       const response = await fetch('/api/admin', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
+        credentials: 'include',
+        body: JSON.stringify({ username, password, rememberMe }),
       });
 
       const data = await response.json();
-
-      if (response.ok && data.success) {
-        setIsAuthenticated(true);
-      } else {
-        setError(data.message || "Invalid credentials");
+      if (!response.ok || !data?.success) {
+        setError(data?.message || 'Invalid credentials');
+        return;
       }
-    } catch (err) {
-      setError("Server error. Please try again.");
+
+      router.push('/admin/dashboard');
+      router.refresh();
+    } catch (error) {
+      setError('Server error. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  if (!isAuthenticated) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-[#060913] text-gray-200 font-sans">
-        <div className="p-8 bg-[#0d1323] border border-[#1e293b] rounded-2xl shadow-xl w-[400px]">
-          <div className="flex justify-center mb-8">
-            <h2 className="text-2xl font-bold text-white tracking-wide">
-              MR.H <span className="text-[#4f46e5]">Studio</span>
-            </h2>
+  return (
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#060913] px-4">
+      <div className="absolute inset-0 grid-bg opacity-30" />
+      <div className="absolute left-1/2 top-[-60px] h-72 w-72 -translate-x-1/2 rounded-full bg-indigo-500/20 blur-3xl" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(79,70,229,0.25),_transparent_35%)]" />
+
+      <div className="relative w-full max-w-[430px] rounded-[28px] border border-slate-700 bg-[#0d1323]/90 px-7 py-8 shadow-[0_30px_80px_rgba(15,23,42,0.8)] backdrop-blur-sm">
+        <div className="mb-8 flex flex-col items-center">
+          <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 via-indigo-500 to-violet-600 text-4xl font-black text-white shadow-lg shadow-indigo-500/30">
+            M
           </div>
-          <form onSubmit={handleLogin} className="space-y-5">
-            {error && (
-              <p className="text-sm font-medium text-center text-red-400 bg-red-900/20 py-2 rounded-lg border border-red-900/50">
-                {error}
-              </p>
-            )}
-            <div>
-              <label className="block mb-1.5 text-sm font-medium text-gray-400">Username</label>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {error ? (
+            <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-200">
+              {error}
+            </div>
+          ) : null}
+
+          <div>
+            <label className="mb-2 block text-sm font-medium text-slate-300">Username</label>
+            <div className="flex items-center gap-3 rounded-xl border border-slate-700 bg-[#070d1a] px-3 py-3 text-slate-300">
+              <User className="h-4 w-4 text-slate-400" />
               <input
                 type="text"
                 value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="w-full p-3 text-sm text-gray-100 transition-all bg-[#060913] border border-[#1e293b] rounded-xl focus:outline-none focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] placeholder-gray-600"
+                onChange={(event) => setUsername(event.target.value)}
                 placeholder="Enter username"
+                className="w-full border-0 bg-transparent text-sm text-white placeholder:text-slate-500 focus:outline-none"
                 required
               />
             </div>
-            <div>
-              <label className="block mb-1.5 text-sm font-medium text-gray-400">Password</label>
+          </div>
+
+          <div>
+            <label className="mb-2 block text-sm font-medium text-slate-300">Password</label>
+            <div className="flex items-center gap-3 rounded-xl border border-slate-700 bg-[#070d1a] px-3 py-3 text-slate-300">
+              <Lock className="h-4 w-4 text-slate-400" />
               <input
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full p-3 text-sm text-gray-100 transition-all bg-[#060913] border border-[#1e293b] rounded-xl focus:outline-none focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] placeholder-gray-600"
+                onChange={(event) => setPassword(event.target.value)}
                 placeholder="Enter password"
+                className="w-full border-0 bg-transparent text-sm text-white placeholder:text-slate-500 focus:outline-none"
                 required
               />
+              <button
+                type="button"
+                aria-label="Toggle password visibility"
+                onClick={() => setShowPassword((current) => !current)}
+                className="text-slate-400 transition hover:text-white"
+              >
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
             </div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3.5 mt-2 text-sm font-semibold text-white transition-all rounded-xl bg-[#4f46e5] hover:bg-[#4338ca] disabled:opacity-50"
-            >
-              {loading ? "Authenticating..." : "Secure Login"}
+          </div>
+
+          <div className="flex items-center justify-between text-sm text-slate-300">
+            <label className="inline-flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(event) => setRememberMe(event.target.checked)}
+                className="h-4 w-4 rounded border-slate-700 bg-[#070d1a] text-indigo-500 focus:ring-indigo-500"
+              />
+              Remember me
+            </label>
+            <button type="button" className="text-indigo-400 hover:text-indigo-300">
+              Forgot password?
             </button>
-          </form>
-        </div>
-      </div>
-    );
-  }
+          </div>
 
-  // लॉग इन के बाद का डैशबोर्ड एरिया
-  return (
-    <div className="min-h-screen bg-[#060913] text-gray-200 font-sans">
-      <nav className="flex items-center justify-between px-8 py-5 bg-[#0d1323] border-b border-[#1e293b]">
-        <h1 className="text-xl font-bold text-white">
-           MR.H <span className="text-[#4f46e5]">Studio</span> Admin
-        </h1>
-        <button
-          onClick={() => setIsAuthenticated(false)}
-          className="px-5 py-2 text-sm font-semibold text-white transition-all bg-[#1e293b] border border-gray-700 rounded-lg hover:bg-gray-800"
-        >
-          Logout
-        </button>
-      </nav>
-
-      <div className="p-8 max-w-7xl mx-auto">
-        <h2 className="mb-8 text-2xl font-bold text-white">Dashboard Overview</h2>
-        
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-          <div className="p-6 transition-all bg-[#0d1323] border border-[#1e293b] rounded-2xl">
-            <h3 className="text-lg font-semibold text-gray-100">Course Management</h3>
-            <p className="mt-1 text-sm text-gray-500">Manage modules and admissions</p>
-          </div>
-          <div className="p-6 transition-all bg-[#0d1323] border border-[#1e293b] rounded-2xl">
-            <h3 className="text-lg font-semibold text-gray-100">Access Control</h3>
-            <p className="mt-1 text-sm text-gray-500">Manage MongoDB admin roles</p>
-          </div>
-          <div className="p-6 transition-all bg-[#0d1323] border border-[#1e293b] rounded-2xl">
-            <h3 className="text-lg font-semibold text-gray-100">Data Logs</h3>
-            <p className="mt-1 text-sm text-gray-500">Track system activities</p>
-          </div>
-        </div>
-
-        {/* File Upload & Import Control Area */}
-        <div className="mt-8 p-6 bg-[#0d1323] border border-[#1e293b] rounded-2xl">
-          <h3 className="mb-2 text-lg font-bold text-white">LMS File Control (Upload & Import)</h3>
-          <p className="text-gray-500 text-sm mb-6">
-            Manage course resources securely directly to your storage.
-          </p>
-          <div className="flex flex-col items-center justify-center w-full h-40 border border-dashed border-[#334155] rounded-xl bg-[#060913] transition hover:border-[#4f46e5]">
-            <svg className="w-8 h-8 mb-3 text-[#4f46e5]" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
-            </svg>
-            <p className="mb-1 text-sm text-gray-400"><span className="font-semibold text-[#4f46e5] cursor-pointer">Click to upload</span> or drag and drop</p>
-            <p className="text-xs text-gray-600">PDF, MP4, ZIP (LMS Data)</p>
-          </div>
-        </div>
+          <button
+            type="submit"
+            disabled={loading}
+            className="mt-2 w-full rounded-xl bg-gradient-to-r from-indigo-500 to-blue-500 px-4 py-3 text-base font-semibold text-white shadow-lg shadow-indigo-500/30 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {loading ? 'Authenticating...' : 'Secure Login'}
+          </button>
+        </form>
       </div>
     </div>
   );

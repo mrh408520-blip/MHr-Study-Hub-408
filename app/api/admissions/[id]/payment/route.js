@@ -1,5 +1,6 @@
 import { ObjectId } from 'mongodb';
 import { getDb } from '@/lib/mongodb';
+import { SITE } from '@/lib/siteData';
 
 export async function POST(request, { params }) {
   try {
@@ -22,6 +23,16 @@ export async function POST(request, { params }) {
       );
     }
 
+    const currentSettings = await db.collection('settings').findOne({ name: 'registration_payment' });
+    const currentRegistrationPrice = Number(currentSettings?.registrationPrice ?? SITE.seatLockFee ?? 20);
+
+    if (!Number.isFinite(currentRegistrationPrice) || currentRegistrationPrice <= 0) {
+      return Response.json(
+        { success: false, error: 'Registration price is not configured correctly.' },
+        { status: 400 }
+      );
+    }
+
     const paymentRecord = {
       admissionId: admission._id.toString ? admission._id.toString() : String(admission._id),
       fullName: admission.fullName || '',
@@ -32,7 +43,7 @@ export async function POST(request, { params }) {
       paymentNote: normalizedPayment.paymentNote || '',
       paymentProofImage: normalizedPayment.paymentProofImage || '',
       imageName: normalizedPayment.imageName || '',
-      amount: 20,
+      amount: currentRegistrationPrice,
       paymentStatus: 'completed',
       createdAt: new Date(),
       updatedAt: new Date(),

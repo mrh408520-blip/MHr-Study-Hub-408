@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
+import { setAdminSessionCookie } from '@/lib/adminAuth';
 
 const DEFAULT_ADMIN_USERNAME = process.env.ADMIN_USERNAME || "admin";
 const DEFAULT_ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin123";
@@ -47,7 +48,7 @@ async function ensureDefaultAdmin(db) {
 
 export async function POST(req) {
   try {
-    const { username, password } = await req.json();
+    const { username, password, rememberMe = false } = await req.json();
 
     if (!username || !password) {
       return NextResponse.json(
@@ -72,14 +73,13 @@ export async function POST(req) {
         );
       }
 
-      return NextResponse.json(
-        {
-          success: true,
-          message: "Secure login successful",
-          user: { username: fallbackAdmin.username, role: fallbackAdmin.role || "superadmin" },
-        },
-        { status: 200 }
-      );
+      const response = NextResponse.json({
+        success: true,
+        message: "Secure login successful",
+        user: { username: fallbackAdmin.username, role: fallbackAdmin.role || "superadmin" },
+      });
+      setAdminSessionCookie(response, { username: fallbackAdmin.username, role: fallbackAdmin.role || "superadmin" }, Boolean(rememberMe));
+      return response;
     }
 
     if (adminUser.password !== String(password)) {
@@ -89,14 +89,13 @@ export async function POST(req) {
       );
     }
 
-    return NextResponse.json(
-      {
-        success: true,
-        message: "Secure login successful",
-        user: { username: adminUser.username, role: adminUser.role || "superadmin" },
-      },
-      { status: 200 }
-    );
+    const response = NextResponse.json({
+      success: true,
+      message: "Secure login successful",
+      user: { username: adminUser.username, role: adminUser.role || "superadmin" },
+    });
+    setAdminSessionCookie(response, { username: adminUser.username, role: adminUser.role || "superadmin" }, Boolean(rememberMe));
+    return response;
   } catch (error) {
     console.error("Admin Login Error:", error);
     return NextResponse.json(
@@ -104,4 +103,8 @@ export async function POST(req) {
       { status: 500 }
     );
   }
+}
+
+export async function GET() {
+  return NextResponse.json({ ok: true });
 }

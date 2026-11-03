@@ -23,6 +23,7 @@ function loadEnvFile(filePath) {
 
 loadEnvFile(path.resolve(__dirname, '../.env'));
 
+const DEFAULT_SEAT_LOCK_FEE = Number(process.env.SEAT_LOCK_FEE ?? 20);
 const uri = process.env.MONGODB_URI;
 const dbName = process.env.MONGODB_DB_NAME;
 
@@ -206,7 +207,7 @@ const sampleAdmissions = [
     email: 'demo@student.com',
     course: 'Basic of Computer',
     source: 'Website',
-    seatLockFee: 20,
+    seatLockFee: DEFAULT_SEAT_LOCK_FEE,
     paymentStatus: 'completed',
     createdAt: new Date(),
     updatedAt: new Date(),
